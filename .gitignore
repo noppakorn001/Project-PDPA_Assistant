@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Large Model weights and outputs
+pdpa_qwen_grpo_lora/
+pdpa_qwen_grpo_output/
+unsloth_compiled_cache/
+
+# Databases & Cache
+pdpa_vectordb/
+.chroma/
+
+# OS files
+.DS_Store
+Thumbs.db
