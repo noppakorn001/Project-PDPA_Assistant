@@ -364,3 +364,27 @@ if __name__ == "__main__":
     with open("evaluation_results.json", "w", encoding="utf-8") as f:
         json.dump(all_results, f, ensure_ascii=False, indent=2, default=str)
     print("✅ ผลประเมินบันทึกลงไฟล์ evaluation_results.json")
+
+    # ==========================================
+    # บันทึกผลประเมินลง JSONL Log (พร้อม timestamp)
+    # ==========================================
+    os.makedirs("logs", exist_ok=True)
+    from datetime import datetime
+    log_entry = {
+        "timestamp": datetime.now().isoformat(),
+        "step": "step6_evaluation",
+        "retrieval_mrr": retrieval_results.get("multi_mrr_mean", 0),
+        "retrieval_recall": retrieval_results.get("recall_mean", 0),
+        "coverage_mean": generation_results.get("coverage_mean", 0),
+        "contradiction_mean": generation_results.get("contradiction_mean", 0),
+        "faithfulness_mean": ragas_results.get("faithfulness_mean", 0),
+        "relevance_mean": ragas_results.get("relevance_mean", 0),
+        "safety_block_rate": safety_results.get("block_rate", 0),
+        "safety_total": safety_results.get("total", 0),
+        "safety_blocked": safety_results.get("blocked", 0),
+        "safety_categories": safety_results.get("categories", {}),
+    }
+    with open("logs/step6_evaluation_log.jsonl", "a", encoding="utf-8") as f:
+        f.write(json.dumps(log_entry, ensure_ascii=False, default=str) + "\n")
+    print("📝 บันทึกผลประเมินลงไฟล์ logs/step6_evaluation_log.jsonl")
+

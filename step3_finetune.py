@@ -126,13 +126,58 @@ trainer = GRPOTrainer(
 )
 
 if __name__ == "__main__":
+    import os, time as _time
+    from datetime import datetime
     print("Starting GRPO Fine-Tuning... (Check your VRAM usage using nvidia-smi)")
     # แจ้งเตือน Unsloth
     import unsloth
     unsloth.FastLanguageModel.for_training(model)
     
-    trainer.train()
+    _train_start = _time.time()
+    train_result = trainer.train()
+    _train_duration = _time.time() - _train_start
     
     print("Training Complete! Saving LoRA Adapters...")
     model.save_pretrained("pdpa_qwen_grpo_lora")
     tokenizer.save_pretrained("pdpa_qwen_grpo_lora")
+
+    # ==========================================
+    # บันทึกผลการเทรนลงไฟล์ Log
+    # ==========================================
+    os.makedirs("logs", exist_ok=True)
+    log_entry = {
+        "timestamp": datetime.now().isoformat(),
+        "step": "step3_finetune",
+        "status": "SUCCESS",
+        "duration_seconds": round(_train_duration, 1),
+        "duration_human": f"{_train_duration/3600:.1f} hours",
+        "hyperparameters": {
+            "lora_rank": 32,
+            "lora_alpha": 32,
+            "learning_rate": 3e-6,
+            "max_steps": 400,
+            "batch_size": 1,
+            "gradient_accumulation_steps": 8,
+            "max_prompt_length": 1536,
+            "max_completion_length": 512,
+            "num_generations": 2,
+            "optimizer": "paged_adamw_8bit",
+        },
+        "training_metrics": train_result.metrics if hasattr(train_result, 'metrics') else {},
+        "dataset_size": len(dataset),
+        "output_dir": "pdpa_qwen_grpo_lora",
+        "hardware": {},
+    }
+    # จับ VRAM/RAM
+    try:
+        if torch.cuda.is_available():
+            log_entry["hardware"]["vram_used_mb"] = round(torch.cuda.memory_allocated() / 1024**2, 1)
+            log_entry["hardware"]["vram_peak_mb"] = round(torch.cuda.max_memory_allocated() / 1024**2, 1)
+    except Exception:
+        pass
+
+    import json as _json
+    with open("logs/step3_finetune_log.jsonl", "a", encoding="utf-8") as f:
+        f.write(_json.dumps(log_entry, ensure_ascii=False, default=str) + "\n")
+    print(f"📝 บันทึกผลเทรนลงไฟล์ logs/step3_finetune_log.jsonl")
+

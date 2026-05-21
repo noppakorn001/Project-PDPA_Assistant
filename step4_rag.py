@@ -404,6 +404,11 @@ def ask_pdpa(query: str, collection, verbose: bool = True) -> str:
 # 9. Main: สร้าง Vector DB + ทดสอบถามคำถาม
 # ==========================================
 if __name__ == "__main__":
+    import os, time as _time
+    from datetime import datetime
+
+    os.makedirs("logs", exist_ok=True)
+
     # สร้าง / โหลด Vector Store
     collection = build_vector_store(CHUNKS_PATH, CHROMA_DIR)
 
@@ -414,6 +419,31 @@ if __name__ == "__main__":
         "หากบริษัทต่างชาติเก็บข้อมูลคนไทย ต้องปฏิบัติตาม PDPA หรือไม่?"
     ]
 
+    rag_log_entries = []
     for q in test_questions:
+        _q_start = _time.time()
         answer = ask_pdpa(q, collection)
+        _q_duration = _time.time() - _q_start
+
+        # ดึง context chunks เพื่อบันทึก
+        ctx_chunks = search_legal_context(q, collection)
+        retrieved_sections = [c.get("metadata", {}).get("section", "?") for c in ctx_chunks]
+
+        log_entry = {
+            "timestamp": datetime.now().isoformat(),
+            "step": "step4_rag",
+            "question": q,
+            "retrieved_sections": retrieved_sections,
+            "num_chunks": len(ctx_chunks),
+            "answer_preview": answer[:500],
+            "latency_seconds": round(_q_duration, 2),
+        }
+        rag_log_entries.append(log_entry)
         print("\n" + "=" * 80 + "\n")
+
+    # บันทึกลงไฟล์ JSONL
+    with open("logs/step4_rag_log.jsonl", "a", encoding="utf-8") as f:
+        for entry in rag_log_entries:
+            f.write(json.dumps(entry, ensure_ascii=False, default=str) + "\n")
+    print(f"📝 บันทึกผล RAG {len(rag_log_entries)} คำถามลงไฟล์ logs/step4_rag_log.jsonl")
+

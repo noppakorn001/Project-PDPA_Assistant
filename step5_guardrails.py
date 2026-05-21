@@ -559,6 +559,10 @@ class PDPAGuardrailsPipeline:
 # 9. ทดสอบระบบ Guardrails
 # =========================================================
 if __name__ == "__main__":
+    import os
+    from datetime import datetime
+
+    os.makedirs("logs", exist_ok=True)
     pipeline = PDPAGuardrailsPipeline()
 
     test_cases = [
@@ -578,9 +582,46 @@ if __name__ == "__main__":
         "What are the penalties for PDPA violations?",
     ]
 
+    guardrail_log_entries = []
     for i, query in enumerate(test_cases):
         print(f"\n{'=' * 70}")
         print(f"📋 Test Case #{i+1}")
         print(f"{'=' * 70}")
         result = pipeline.run(query, verbose=True)
         print(f"\n📊 Summary: blocked={result.blocked}, reason={result.block_reason or 'N/A'}, pii_input={result.pii_found_in_input}")
+
+        log_entry = {
+            "timestamp": datetime.now().isoformat(),
+            "step": "step5_guardrails",
+            "test_case": i + 1,
+            "query": query,
+            "blocked": result.blocked,
+            "block_reason": result.block_reason,
+            "pii_found_in_input": result.pii_found_in_input,
+            "pii_found_in_output": result.pii_found_in_output,
+            "answer_preview": (result.answer or "")[:300],
+        }
+        guardrail_log_entries.append(log_entry)
+
+    # บันทึกลงไฟล์ JSONL
+    with open("logs/step5_guardrails_log.jsonl", "a", encoding="utf-8") as f:
+        for entry in guardrail_log_entries:
+            f.write(json.dumps(entry, ensure_ascii=False, default=str) + "\n")
+
+    # สรุปผลรวม
+    total = len(guardrail_log_entries)
+    blocked_count = sum(1 for e in guardrail_log_entries if e["blocked"])
+    pii_count = sum(1 for e in guardrail_log_entries if e["pii_found_in_input"])
+    summary = {
+        "timestamp": datetime.now().isoformat(),
+        "step": "step5_guardrails_summary",
+        "total_tests": total,
+        "blocked": blocked_count,
+        "pii_detected": pii_count,
+        "passed": total - blocked_count,
+        "block_rate": f"{blocked_count/total:.0%}" if total else "0%",
+    }
+    with open("logs/step5_guardrails_log.jsonl", "a", encoding="utf-8") as f:
+        f.write(json.dumps(summary, ensure_ascii=False) + "\n")
+    print(f"\n📝 บันทึกผล Guardrails {total} test cases ลงไฟล์ logs/step5_guardrails_log.jsonl")
+
