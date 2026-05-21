@@ -1,7 +1,8 @@
 import pdfplumber
 import re
 import json
-from pythainlp.tokenize import word_tokenize, sent_tokenize, dict_trie
+from pythainlp.tokenize import word_tokenize, sent_tokenize
+from pythainlp.util import dict_trie
 from pythainlp.corpus import thai_words
 
 # ==========================================
