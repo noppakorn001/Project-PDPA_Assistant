@@ -309,6 +309,11 @@ if "temp_input" in st.session_state and st.session_state.temp_input:
     del st.session_state.temp_input
 
 if user_input:
+    # === Deep Debug Logging: เริ่มจับเวลาและสร้าง Trace ===
+    from logging_utils import pdpa_logger
+    _start_time = time.time()
+    trace = pdpa_logger.start_trace(user_input)
+
     # 1. Render User Message
     with st.chat_message("user"):
         st.markdown(user_input)
@@ -334,12 +339,23 @@ if user_input:
         time.sleep(0.8)
         topic_status, topic_msg = check_topic_guard(redacted_prompt)
         
+        # === Logging: บันทึกผล Input Rails ===
+        pdpa_logger.log_guardrail_input(
+            trace, status=topic_status,
+            pii_list=pii_list if has_pii else [],
+            redacted_text=redacted_prompt,
+            topic_result=topic_status, topic_conf=1.0
+        )
+
         if topic_status != "ALLOWED":
             status.update(label="❌ คำขอถูกระงับโดยระบบความปลอดภัย!", state="error", expanded=False)
-            # Render blocked msg
             with st.chat_message("assistant"):
                 st.markdown(topic_msg)
             st.session_state.messages.append({"role": "assistant", "content": topic_msg})
+            # === Logging: บันทึก Blocked Request ===
+            pdpa_logger.log_llm(trace, prompt="[BLOCKED]", response=topic_msg)
+            pdpa_logger.log_hardware(trace)
+            pdpa_logger.finalize(trace, _start_time)
             st.stop()
             
         status.write("🟢 หัวข้อผ่านเกณฑ์ความปลอดภัย เข้าสู่การทำงานหลัก")
@@ -349,11 +365,27 @@ if user_input:
         time.sleep(1.0)
         retrieved_sections = retrieve_rag_context(redacted_prompt)
         status.write(f"📂 พบบทบัญญัติเกี่ยวข้อง: {retrieved_sections}")
+
+        # === Logging: บันทึกผล RAG ===
+        pdpa_logger.log_rag_context(trace, [
+            {"section": sec, "score": 0.0, "source": "vector_search"}
+            for sec in retrieved_sections
+        ])
         
         # --- Stage 4: LLM Generation ---
         status.write("🤖 [Qwen2.5-3B-Instruct (4-bit)] กำลังสรุปข้อมูลและเรียบเรียงคำตอบ...")
         time.sleep(1.2)
         ai_response = generate_ai_response(redacted_prompt, retrieved_sections)
+
+        # === Logging: บันทึก Prompt + Response ===
+        mock_prompt = f"[Context: {retrieved_sections}] Query: {redacted_prompt}"
+        pdpa_logger.log_llm(trace, prompt=mock_prompt, response=ai_response)
+
+        # === Logging: บันทึกผล Output Rails ===
+        pdpa_logger.log_guardrail_output(trace, status="PASSED")
+
+        # === Logging: จับ Hardware Metrics ===
+        pdpa_logger.log_hardware(trace)
         
         status.update(label="✅ ประมวลผลคำตอบสำเร็จ!", state="complete", expanded=False)
 
@@ -380,3 +412,7 @@ if user_input:
         history_entry["redacted_display"] = f"{pii_warning_html}<br><br>{ai_response}"
         
     st.session_state.messages.append(history_entry)
+
+    # === Logging: Finalize — เขียน Trace ลงไฟล์ JSONL ===
+    pdpa_logger.finalize(trace, _start_time)
+
