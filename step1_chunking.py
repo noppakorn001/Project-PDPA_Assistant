@@ -1,7 +1,33 @@
 import pdfplumber
 import re
 import json
-from pythainlp.tokenize import word_tokenize, sent_tokenize
+from pythainlp.tokenize import word_tokenize, sent_tokenize, dict_trie
+from pythainlp.corpus import thai_words
+
+# ==========================================
+# Custom Legal Dictionary สำหรับ PDPA
+# ==========================================
+# ป้องกันไม่ให้คำศัพท์เฉพาะทางกฎหมายถูกตัดแยกออกจากกัน
+PDPA_LEGAL_TERMS = {
+    "ผู้ควบคุมข้อมูลส่วนบุคคล",
+    "ผู้ประมวลผลข้อมูลส่วนบุคคล",
+    "เจ้าของข้อมูลส่วนบุคคล",
+    "ข้อมูลส่วนบุคคล",
+    "ข้อมูลส่วนบุคคลอ่อนไหว",
+    "ข้อมูลชีวภาพ",
+    "ข้อมูลพันธุกรรม",
+    "ความยินยอมโดยชัดแจ้ง",
+    "การละเมิดข้อมูลส่วนบุคคล",
+    "ประโยชน์โดยชอบด้วยกฎหมาย",
+    "การเก็บรวบรวม",
+    "สิทธิในการขอเข้าถึง",
+    "สิทธิในการลบข้อมูล",
+    "สิทธิในการโอนย้ายข้อมูล",
+    "คณะกรรมการคุ้มครองข้อมูลส่วนบุคคล",
+    "สำนักงานคณะกรรมการคุ้มครองข้อมูลส่วนบุคคล",
+}
+custom_words = set(thai_words()) | PDPA_LEGAL_TERMS
+CUSTOM_DICT = dict_trie(custom_words)
 
 def extract_text_from_pdf(pdf_path):
     text = ""

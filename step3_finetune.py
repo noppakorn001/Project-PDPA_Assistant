@@ -22,10 +22,10 @@ model, tokenizer = FastLanguageModel.from_pretrained(
 # ตั้งค่า LoRA และ Gradient Checkpointing
 model = FastLanguageModel.get_peft_model(
     model,
-    r=16, # ใช้ 16 เพื่อประหยัด VRAM (หรือ 32 หาก VRAM ยังพอ)
+    r=32, # เพิ่มจาก 16→32 เพื่อเพิ่มช่องทางเรียนรู้ Pattern ภาษาไทย (ใช้ VRAM คืนจาก paged optimizer)
     target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
                     "gate_proj", "up_proj", "down_proj"],
-    lora_alpha=16,
+    lora_alpha=32, # รักษา Scaling Ratio alpha/r = 1.0
     lora_dropout=0, # Unsloth แนะนำให้ใช้ 0 สำหรับความเร็วที่เพิ่มขึ้น
     bias="none",
     use_gradient_checkpointing="unsloth", # ฟีเจอร์สำคัญ: ลด VRAM Spike ตอนทำ Backward Pass
@@ -105,17 +105,17 @@ dataset = load_and_format_dataset("pdpa_synthetic_data.jsonl")
 # ==========================================
 training_args = GRPOConfig(
     output_dir="pdpa_qwen_grpo_output",
-    learning_rate=5e-6,
+    learning_rate=3e-6, # ลดจาก 5e-6→3e-6 เพื่อความเสถียรกับ LoRA Rank ที่สูงขึ้น
     per_device_train_batch_size=1, # บังคับทีละ 1 ป้องกัน OOM
     gradient_accumulation_steps=8, # สะสม Gradient ทดแทน Batch Size เล็ก
     max_prompt_length=1536,
-    max_completion_length=384,
+    max_completion_length=512, # ขยายจาก 384→512 ให้ CoT ภาษาไทยครบ 4 ขั้นตอน
     num_generations=2, # สร้างคำตอบเปรียบเทียบแค่ 2 ตัวพอ (ปกติ 4-8 แต่ VRAM จะแตก)
     save_steps=100,
-    max_steps=300, # จำนวนสเต็ปฝึกสอน (ปรับได้ตามต้องการ)
+    max_steps=400, # เพิ่มจาก 300→400 ให้ LoRA r=32 เรียนรู้ได้เต็มที่
     logging_steps=10,
     report_to="none",
-    optim="adamw_8bit" # ใช้ 8-bit Optimizer เซฟ VRAM เพิ่มเติมได้อีก
+    optim="paged_adamw_8bit" # Swap Optimizer States ไป CPU RAM (ประหยัด VRAM ~0.3-0.5 GB)
 )
 
 trainer = GRPOTrainer(

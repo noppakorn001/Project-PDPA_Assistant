@@ -186,15 +186,44 @@ def nitilink_enrich(primary_chunks: list[dict], collection) -> list[dict]:
 
 
 # ==========================================
-# 5. Hybrid Search (Dense + Metadata)
+# 5. Thai Synonym Mapping (Query Expansion)
+# ==========================================
+# แปลงคำพูดภาษาปากเป็นคำศัพท์กฎหมายก่อนค้นหาใน Vector DB
+THAI_LEGAL_SYNONYMS = {
+    "ข้อมูลหลุด": "การละเมิดข้อมูลส่วนบุคคล",
+    "ข้อมูลรั่ว": "การละเมิดข้อมูลส่วนบุคคล",
+    "แอบเก็บ": "การเก็บรวบรวมข้อมูลส่วนบุคคลโดยมิชอบ",
+    "ถอนสิทธิ์": "การถอนความยินยอม",
+    "ลบข้อมูล": "สิทธิในการลบข้อมูล",
+    "ขอดูข้อมูล": "สิทธิในการขอเข้าถึง",
+    "โดนปรับ": "โทษปรับทางปกครอง",
+    "ข้อมูลส่วนตัว": "ข้อมูลส่วนบุคคล",
+    "ข้อมูลละเอียดอ่อน": "ข้อมูลส่วนบุคคลที่มีความอ่อนไหว",
+    "ย้ายข้อมูล": "สิทธิในการโอนย้ายข้อมูล",
+}
+
+def expand_query(query: str) -> str:
+    """ขยายคำถามภาษาปากเป็นคำศัพท์กฎหมาย (Zero-cost, ไม่ใช้โมเดล)"""
+    expanded = query
+    for slang, legal_term in THAI_LEGAL_SYNONYMS.items():
+        if slang in query:
+            expanded += f" ({legal_term})"
+    return expanded
+
+
+# ==========================================
+# 6. Hybrid Search (Dense + Metadata)
 # ==========================================
 def search_legal_context(query: str, collection, top_k: int = TOP_K) -> list[dict]:
     """
     ค้นหาบริบททางกฎหมายจาก Vector DB
     ใช้ Dense Embedding Search (BGE-M3) + NitiLink Cross-referencing
     """
+    # Query Expansion: แปลงคำภาษาปากเป็นคำศัพท์กฎหมาย
+    expanded_query = expand_query(query)
+
     # Encode คำถามด้วย BGE-M3 (บน CPU)
-    query_embedding = embedder.encode(query).tolist()
+    query_embedding = embedder.encode(expanded_query).tolist()
 
     # ค้นหา Top-K จาก ChromaDB
     results = collection.query(
