@@ -51,11 +51,11 @@ def format_reward_func(completions, **kwargs):
         text = comp[0]['content'] if isinstance(comp, list) else str(comp)
         score = 0.0
         
-        # ตรวจสอบ Format CoT
-        if "1. บทบาท:" in text: score += 0.25
-        if "2. ประเภทข้อมูล:" in text: score += 0.25
-        if "3. การประเมินกฎหมาย:" in text: score += 0.25
-        if "4. คำแนะนำ:" in text: score += 0.25
+        # ตรวจสอบ Format CoT — รองรับทั้ง Numbered List และ Markdown Header
+        if "1. บทบาท:" in text or "### บทบาท" in text or "**บทบาท" in text: score += 0.25
+        if "2. ประเภทข้อมูล:" in text or "### ประเภทข้อมูล" in text or "**ประเภทข้อมูล" in text: score += 0.25
+        if "3. การประเมินกฎหมาย:" in text or "### การประเมินกฎหมาย" in text or "**การประเมิน" in text: score += 0.25
+        if "4. คำแนะนำ:" in text or "### คำแนะนำ" in text or "**คำแนะนำ" in text or "**ข้อเสนอแนะ" in text: score += 0.25
         
         rewards.append(score)
     return rewards
