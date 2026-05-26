@@ -17,6 +17,44 @@ st.markdown("""
     /* Global Styles */
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap');
     
+    /* Swaying scale animation */
+    @keyframes sway {
+        0% { transform: rotate(0deg); }
+        33% { transform: rotate(2.5deg); }
+        66% { transform: rotate(-2.5deg); }
+        100% { transform: rotate(0deg); }
+    }
+    @keyframes counter-sway-left {
+        0% { transform: rotate(0deg) translate(0px, 0px); }
+        33% { transform: rotate(-2.5deg) translate(0.2px, -0.2px); }
+        66% { transform: rotate(2.5deg) translate(-0.2px, 0.2px); }
+        100% { transform: rotate(0deg) translate(0px, 0px); }
+    }
+    @keyframes counter-sway-right {
+        0% { transform: rotate(0deg) translate(0px, 0px); }
+        33% { transform: rotate(-2.5deg) translate(-0.2px, 0.2px); }
+        66% { transform: rotate(2.5deg) translate(0.2px, -0.2px); }
+        100% { transform: rotate(0deg) translate(0px, 0px); }
+    }
+    
+    .legal-icon {
+        vertical-align: middle;
+        width: 44px;
+        height: 44px;
+    }
+    .scale-beam {
+        transform-origin: 12px 7px;
+        animation: sway 5s infinite ease-in-out;
+    }
+    .left-pan {
+        transform-origin: 6px 7px;
+        animation: counter-sway-left 5s infinite ease-in-out;
+    }
+    .right-pan {
+        transform-origin: 18px 7px;
+        animation: counter-sway-right 5s infinite ease-in-out;
+    }
+    
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
     }
@@ -326,7 +364,29 @@ ASSISTANT_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/s
 # Title Header HTML (Claude Theme - No Emojis)
 st.markdown("""
 <div class="header-container">
-    <div class="header-title">PDPA Legal AI Assistant</div>
+    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 0.5rem;">
+        <svg class="legal-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#cc785c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Central Pillar -->
+            <path d="M12 3v17M19 20H5M12 20h2" />
+            <!-- Central triangle support -->
+            <path d="M12 7l-1.5 2h3z" fill="#cc785c" opacity="0.3" />
+            <!-- Swaying Beam Group -->
+            <g class="scale-beam">
+                <path d="M6 7h12" />
+                <!-- Left Pan -->
+                <g class="left-pan">
+                    <path d="M6 7v7M3 14h6" />
+                    <path d="M3 14c0 1.5 1.2 2.5 3 2.5s3-1 3-2.5" />
+                </g>
+                <!-- Right Pan -->
+                <g class="right-pan">
+                    <path d="M18 7v7M15 14h6" />
+                    <path d="M15 14c0 1.5 1.2 2.5 3 2.5s3-1 3-2.5" />
+                </g>
+            </g>
+        </svg>
+        <div class="header-title" style="margin: 0; line-height: 1;">PDPA Legal AI Assistant</div>
+    </div>
     <div class="header-subtitle">ผู้ช่วยอัจฉริยะวิเคราะห์ข้อกฎหมาย PDPA ระดับองค์กร (Enterprise Hybrid-Safety Pipeline)</div>
 </div>
 """, unsafe_allow_html=True)
