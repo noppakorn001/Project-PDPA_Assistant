@@ -11,77 +11,81 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom NVIDIA CSS Injection
+# Custom Claude.com CSS Injection
 st.markdown("""
 <style>
     /* Global Styles */
-    @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap');
+    
     html, body, [class*="css"] {
-        font-family: 'Prompt', sans-serif;
+        font-family: 'Inter', sans-serif;
     }
     
     /* App background */
     .stApp {
-        background-color: #000000;
-        color: #FFFFFF;
+        background-color: #faf9f5;
+        color: #141413;
     }
     
-    /* Header NVIDIA styling */
+    /* Serif Display Font for Headings */
+    h1, h2, h3, .serif-font, .header-title {
+        font-family: 'Cormorant Garamond', serif !important;
+        font-weight: 500 !important;
+        letter-spacing: -0.02em !important;
+        color: #141413 !important;
+    }
+    
+    /* Header Container (Claude Editorial Band) */
     .header-container {
-        background-color: #1A1A1A;
-        padding: 2rem;
-        border-radius: 4px;
-        border-top: 4px solid #76B900;
-        border-left: 1px solid #333333;
-        border-right: 1px solid #333333;
-        border-bottom: 1px solid #333333;
+        background-color: #efe9de;
+        padding: 2.5rem;
+        border-radius: 12px;
+        border: 1px solid #e6dfd8;
         margin-bottom: 2rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     }
     .header-title {
-        font-size: 2.2rem;
-        font-weight: 600;
-        color: #76B900;
+        font-size: 2.8rem;
         margin-bottom: 0.5rem;
     }
     .header-subtitle {
-        color: #B3B3B3;
-        font-size: 1rem;
+        color: #6c6a64;
+        font-size: 1.1rem;
+        font-family: 'Inter', sans-serif !important;
     }
     
     /* Sidebar styling customization */
     [data-testid="stSidebar"] {
-        background-color: #1A1A1A;
-        border-right: 1px solid #333333;
+        background-color: #efe9de !important;
+        border-right: 1px solid #e6dfd8;
     }
     
     /* Metric container styling */
     .metric-card {
-        background: #000000;
-        border: 1px solid #333333;
+        background: #faf9f5;
+        border: 1px solid #e6dfd8;
         padding: 1rem;
-        border-radius: 4px;
+        border-radius: 8px;
         margin-bottom: 1rem;
     }
     .metric-title {
         font-size: 0.85rem;
-        color: #B3B3B3;
+        color: #6c6a64;
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
     .metric-value {
         font-size: 1.4rem;
         font-weight: 600;
-        color: #76B900;
+        color: #cc785c;
     }
     
     /* Redacted warning badge styling */
     .redact-badge {
-        border: 1px solid #FF3333;
-        background-color: rgba(255, 51, 51, 0.1);
-        color: #FF3333;
+        border: 1px solid #c64545;
+        background-color: rgba(198, 69, 69, 0.05);
+        color: #c64545;
         padding: 0.5rem 1rem;
-        border-radius: 4px;
+        border-radius: 8px;
         font-size: 0.9rem;
         font-weight: bold;
         display: inline-block;
@@ -90,22 +94,32 @@ st.markdown("""
     
     /* Status container override */
     div[data-testid="stStatus"] {
-        background-color: #1A1A1A !important;
-        border: 1px solid #333333 !important;
-        border-left: 4px solid #76B900 !important;
+        background-color: #efe9de !important;
+        border: 1px solid #e6dfd8 !important;
+        border-left: 4px solid #cc785c !important;
     }
     
     /* Custom buttons style */
     div.stButton > button {
-        background-color: #1A1A1A;
-        color: #FFFFFF;
-        border: 1px solid #333333;
-        border-radius: 4px;
+        background-color: #faf9f5;
+        color: #141413;
+        border: 1px solid #e6dfd8;
+        border-radius: 8px;
     }
     div.stButton > button:hover {
-        border-color: #76B900;
-        color: #76B900;
-        background-color: #000000;
+        border-color: #cc785c;
+        color: #cc785c;
+        background-color: #efe9de;
+    }
+    
+    /* Primary buttons style */
+    div.stButton > button[kind="primary"] {
+        background-color: #cc785c !important;
+        color: white !important;
+        border: none !important;
+    }
+    div.stButton > button[kind="primary"]:hover {
+        background-color: #a9583e !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -119,7 +133,7 @@ PDPA_DB = {
         "description": "ข้อยกเว้นการขอความยินยอมในการเก็บข้อมูลส่วนบุคคลทั่วไป"
     },
     "มาตรา ๒๖": {
-        "text": "ห้ามมิให้ทำการเก็บรวบรวมข้อมูลส่วนบุคคลเกี่ยวกับ เชื้อชาติ เผ่าพันธุ์ ความคิดเห็นทางการเมือง ความเชื่อในลัทธิ ศาสนา พฤทีพฤติกรรมทางเพศ ประวัติอาชญากรรม ข้อมูลสุขภาพ ความพิการ ข้อมูลสหภาพแรงงาน ข้อมูลพันธุกรรม ข้อมูลชีวภาพ (Sensitive Personal Data) เว้นแต่ได้รับความยินยอมโดยชัดแจ้ง หรือตามข้อยกเว้นกฎหมายกำหนด",
+        "text": "ห้ามมิให้ทำการเก็บรวบรวมข้อมูลส่วนบุคคลเกี่ยวกับ เชื้อชาติ เผ่าพันธุ์ ความคิดเห็นทางการเมือง ความเชื่อในลัทธิ ศาสนา พฤติกรรมทางเพศ ประวัติอาชญากรรม ข้อมูลสุขภาพ ความพิการ ข้อมูลสหภาพแรงงาน ข้อมูลพันธุกรรม ข้อมูลชีวภาพ (Sensitive Personal Data) เว้นแต่ได้รับความยินยอมโดยชัดแจ้ง หรือตามข้อยกเว้นกฎหมายกำหนด",
         "description": "ข้อมูลส่วนบุคคลที่มีความอ่อนไหวสูงและการควบคุมเป็นพิเศษ"
     },
     "มาตรา ๓๐": {
@@ -249,11 +263,11 @@ def generate_ai_response(redacted_prompt: str, sections: list):
 # 4. Streamlit UI Layout
 # ==============================================================================
 
-# Custom Clean SVG Avatars (NVIDIA Theme - No Emojis)
-USER_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231F2937'/><text x='50' y='65' font-family='sans-serif' font-size='50' fill='white' text-anchor='middle'>U</text></svg>"
-ASSISTANT_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100' height='100' fill='%2376B900'/><text x='50' y='65' font-family='sans-serif' font-size='50' fill='black' font-weight='bold' text-anchor='middle'>N</text></svg>"
+# Custom Clean SVG Avatars (Claude Cream & Coral Theme - No Emojis)
+USER_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23141413'/><text x='50' y='65' font-family='sans-serif' font-size='45' fill='%23faf9f5' text-anchor='middle' font-weight='bold'>U</text></svg>"
+ASSISTANT_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23cc785c'/><text x='50' y='65' font-family='sans-serif' font-size='45' fill='white' text-anchor='middle' font-weight='bold'>C</text></svg>"
 
-# Title Header HTML (NVIDIA Theme - No Emojis)
+# Title Header HTML (Claude Theme - No Emojis)
 st.markdown("""
 <div class="header-container">
     <div class="header-title">PDPA Legal AI Assistant</div>
@@ -266,9 +280,9 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # ==============================================================================
-# Sidebar Configuration (NVIDIA Theme - No Emojis)
+# Sidebar Configuration (Claude Theme - No Emojis)
 # ==============================================================================
-st.sidebar.markdown("<h2 style='color:#76B900; margin-bottom: 1rem;'>System Console</h2>", unsafe_allow_html=True)
+st.sidebar.markdown("<h2 class='serif-font' style='color:#141413; font-size: 2rem; margin-bottom: 1.5rem;'>System Console</h2>", unsafe_allow_html=True)
 
 # Hardware Simulators
 st.sidebar.markdown('<div class="metric-card"><div class="metric-title">GPU VRAM Usage</div><div class="metric-value">4.8 / 6.0 GB (Optimal)</div></div>', unsafe_allow_html=True)
@@ -279,7 +293,7 @@ st.sidebar.markdown('<div class="metric-card"><div class="metric-title">Guardrai
 st.sidebar.markdown("---")
 
 # Quick Prompts / Examples
-st.sidebar.markdown("<h4 style='color:#B3B3B3; margin-bottom: 0.5rem;'>คำแนะนำสำหรับทดสอบ</h4>", unsafe_allow_html=True)
+st.sidebar.markdown("<h4 style='color:#6c6a64; margin-bottom: 0.5rem;'>คำแนะนำสำหรับทดสอบ</h4>", unsafe_allow_html=True)
 examples = [
     "บริษัทจำเป็นต้องขอความยินยอมจากลูกค้าทุกครั้งไหม?",
     "ข้อมูลสุขภาพของพนักงานเป็นข้อมูลประเภทใดและใช้อะไรควบคุมบ้าง?",
