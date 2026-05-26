@@ -92,6 +92,62 @@ st.markdown("""
         margin-bottom: 0.5rem;
     }
     
+    /* Custom animations & symbols for pipeline status */
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    @keyframes pulse {
+        0% { opacity: 0.4; }
+        50% { opacity: 1; }
+        100% { opacity: 0.4; }
+    }
+    
+    .loading-spinner {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border: 2px solid rgba(204, 120, 92, 0.2);
+        border-top-color: #cc785c;
+        border-radius: 50%;
+        animation: spin 1s infinite linear;
+        margin-right: 8px;
+        vertical-align: middle;
+    }
+    .pulse-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: #cc785c;
+        border-radius: 50%;
+        margin-right: 8px;
+        animation: pulse 1.5s infinite ease-in-out;
+        vertical-align: middle;
+    }
+    .success-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: #5db872;
+        border-radius: 50%;
+        margin-right: 8px;
+        vertical-align: middle;
+    }
+    .error-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: #c64545;
+        border-radius: 50%;
+        margin-right: 8px;
+        vertical-align: middle;
+    }
+    .status-text {
+        font-size: 0.95rem;
+        color: #141413;
+        vertical-align: middle;
+    }
+
     /* Status container override */
     div[data-testid="stStatus"] {
         background-color: #efe9de !important;
@@ -352,19 +408,19 @@ if user_input:
     with st.status("กำลังประมวลผลผ่าน Guardrails & RAG Pipeline...", expanded=True) as status:
         
         # --- Stage 1: PII Scan ---
-        status.write("[Presidio Engine] สแกนข้อมูลส่วนบุคคล (PII Detection)...")
+        status.markdown("<span class='loading-spinner'></span> <span class='status-text'>[Presidio Engine] สแกนข้อมูลส่วนบุคคล (PII Detection)...</span>", unsafe_allow_html=True)
         time.sleep(0.8)
         has_pii, redacted_prompt, pii_list = detect_pii(user_input)
         
         pii_warning_html = ""
         if has_pii:
-            status.write(f"ตรวจพบข้อมูลส่วนบุคคล: {pii_list} -> ทำการแปลงข้อความเพื่อความปลอดภัย")
+            status.markdown(f"<span class='error-dot'></span> <span class='status-text'>ตรวจพบข้อมูลส่วนบุคคล: {pii_list} -> ทำการแปลงข้อความเพื่อความปลอดภัย</span>", unsafe_allow_html=True)
             pii_warning_html = f"<div class='redact-badge'>ตรวจพบและลบข้อมูล PII ออก: {pii_list}</div><br><i>ส่งเข้าโมเดลด้วยข้อความ: {redacted_prompt}</i>"
         else:
-            status.write("ไม่พบข้อมูลส่วนบุคคลที่เป็นอันตรายในประโยค")
+            status.markdown("<span class='success-dot'></span> <span class='status-text'>ไม่พบข้อมูลส่วนบุคคลที่เป็นอันตรายในประโยค</span>", unsafe_allow_html=True)
             
         # --- Stage 2: Topic Guard ---
-        status.write("[Topic Guard / NeMo] ตรวจสอบความปลอดภัยและขอบเขตหัวข้อสนทนา...")
+        status.markdown("<span class='loading-spinner'></span> <span class='status-text'>[Topic Guard / NeMo] ตรวจสอบความปลอดภัยและขอบเขตหัวข้อสนทนา...</span>", unsafe_allow_html=True)
         time.sleep(0.8)
         topic_status, topic_msg = check_topic_guard(redacted_prompt)
         
@@ -387,13 +443,13 @@ if user_input:
             pdpa_logger.finalize(trace, _start_time)
             st.stop()
             
-        status.write("หัวข้อผ่านเกณฑ์ความปลอดภัย เข้าสู่การทำงานหลัก")
+        status.markdown("<span class='success-dot'></span> <span class='status-text'>หัวข้อผ่านเกณฑ์ความปลอดภัย เข้าสู่การทำงานหลัก</span>", unsafe_allow_html=True)
 
         # --- Stage 3: Retrieval (RAG) ---
-        status.write("[BGE-M3 Embeddings + NitiLink] ค้นหาเอกสารมาตรากฎหมายอ้างอิง...")
+        status.markdown("<span class='loading-spinner'></span> <span class='status-text'>[BGE-M3 Embeddings + NitiLink] ค้นหาเอกสารมาตรากฎหมายอ้างอิง...</span>", unsafe_allow_html=True)
         time.sleep(1.0)
         retrieved_sections = retrieve_rag_context(redacted_prompt)
-        status.write(f"พบบทบัญญัติเกี่ยวข้อง: {retrieved_sections}")
+        status.markdown(f"<span class='success-dot'></span> <span class='status-text'>พบบทบัญญัติเกี่ยวข้อง: {retrieved_sections}</span>", unsafe_allow_html=True)
 
         # === Logging: บันทึกผล RAG ===
         pdpa_logger.log_rag_context(trace, [
@@ -402,7 +458,7 @@ if user_input:
         ])
         
         # --- Stage 4: LLM Generation ---
-        status.write("[Qwen2.5-3B-Instruct (4-bit)] กำลังสรุปข้อมูลและเรียบเรียงคำตอบ...")
+        status.markdown("<span class='loading-spinner'></span> <span class='status-text'>[Qwen2.5-3B-Instruct (4-bit)] กำลังสรุปข้อมูลและเรียบเรียงคำตอบ...</span>", unsafe_allow_html=True)
         time.sleep(1.2)
         ai_response = generate_ai_response(redacted_prompt, retrieved_sections)
 
