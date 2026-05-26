@@ -7,12 +7,11 @@ import re
 # ==============================================================================
 st.set_page_config(
     page_title="PDPA Legal AI Assistant - Enterprise UI",
-    page_icon="⚖️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom Premium CSS Injection
+# Custom NVIDIA CSS Injection
 st.markdown("""
 <style>
     /* Global Styles */
@@ -23,77 +22,90 @@ st.markdown("""
     
     /* App background */
     .stApp {
-        background-color: #0F172A;
-        color: #F8FAFC;
+        background-color: #000000;
+        color: #FFFFFF;
     }
     
-    /* Header Gradient styling */
+    /* Header NVIDIA styling */
     .header-container {
-        background: linear-gradient(135deg, #1E293B, #0F172A);
+        background-color: #1A1A1A;
         padding: 2rem;
-        border-radius: 12px;
-        border: 1px solid #334155;
+        border-radius: 4px;
+        border-top: 4px solid #76B900;
+        border-left: 1px solid #333333;
+        border-right: 1px solid #333333;
+        border-bottom: 1px solid #333333;
         margin-bottom: 2rem;
-        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     }
     .header-title {
         font-size: 2.2rem;
         font-weight: 600;
-        background: linear-gradient(to right, #38BDF8, #818CF8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: #76B900;
         margin-bottom: 0.5rem;
     }
     .header-subtitle {
-        color: #94A3B8;
+        color: #B3B3B3;
         font-size: 1rem;
     }
     
     /* Sidebar styling customization */
     [data-testid="stSidebar"] {
-        background-color: #1E293B;
-        border-right: 1px solid #334155;
+        background-color: #1A1A1A;
+        border-right: 1px solid #333333;
     }
     
     /* Metric container styling */
     .metric-card {
-        background: #0F172A;
-        border: 1px solid #334155;
+        background: #000000;
+        border: 1px solid #333333;
         padding: 1rem;
-        border-radius: 8px;
+        border-radius: 4px;
         margin-bottom: 1rem;
     }
     .metric-title {
         font-size: 0.85rem;
-        color: #94A3B8;
+        color: #B3B3B3;
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
     .metric-value {
         font-size: 1.4rem;
         font-weight: 600;
-        color: #38BDF8;
+        color: #76B900;
     }
     
     /* Redacted warning badge styling */
     .redact-badge {
-        background-color: #EF4444;
-        color: white;
-        padding: 0.2rem 0.6rem;
+        border: 1px solid #FF3333;
+        background-color: rgba(255, 51, 51, 0.1);
+        color: #FF3333;
+        padding: 0.5rem 1rem;
         border-radius: 4px;
-        font-size: 0.8rem;
+        font-size: 0.9rem;
         font-weight: bold;
         display: inline-block;
         margin-bottom: 0.5rem;
     }
     
-    /* Status styling */
-    .status-info {
-        background-color: #1E293B;
-        border-left: 4px solid #38BDF8;
-        padding: 0.8rem;
-        margin: 0.5rem 0;
-        border-radius: 0 8px 8px 0;
+    /* Status container override */
+    div[data-testid="stStatus"] {
+        background-color: #1A1A1A !important;
+        border: 1px solid #333333 !important;
+        border-left: 4px solid #76B900 !important;
+    }
+    
+    /* Custom buttons style */
+    div.stButton > button {
+        background-color: #1A1A1A;
+        color: #FFFFFF;
+        border: 1px solid #333333;
+        border-radius: 4px;
+    }
+    div.stButton > button:hover {
+        border-color: #76B900;
+        color: #76B900;
+        background-color: #000000;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -107,7 +119,7 @@ PDPA_DB = {
         "description": "ข้อยกเว้นการขอความยินยอมในการเก็บข้อมูลส่วนบุคคลทั่วไป"
     },
     "มาตรา ๒๖": {
-        "text": "ห้ามมิให้ทำการเก็บรวบรวมข้อมูลส่วนบุคคลเกี่ยวกับ เชื้อชาติ เผ่าพันธุ์ ความคิดเห็นทางการเมือง ความเชื่อในลัทธิ ศาสนา พฤติกรรมทางเพศ ประวัติอาชญากรรม ข้อมูลสุขภาพ ความพิการ ข้อมูลสหภาพแรงงาน ข้อมูลพันธุกรรม ข้อมูลชีวภาพ (Sensitive Personal Data) เว้นแต่ได้รับความยินยอมโดยชัดแจ้ง หรือตามข้อยกเว้นกฎหมายกำหนด",
+        "text": "ห้ามมิให้ทำการเก็บรวบรวมข้อมูลส่วนบุคคลเกี่ยวกับ เชื้อชาติ เผ่าพันธุ์ ความคิดเห็นทางการเมือง ความเชื่อในลัทธิ ศาสนา พฤทีพฤติกรรมทางเพศ ประวัติอาชญากรรม ข้อมูลสุขภาพ ความพิการ ข้อมูลสหภาพแรงงาน ข้อมูลพันธุกรรม ข้อมูลชีวภาพ (Sensitive Personal Data) เว้นแต่ได้รับความยินยอมโดยชัดแจ้ง หรือตามข้อยกเว้นกฎหมายกำหนด",
         "description": "ข้อมูลส่วนบุคคลที่มีความอ่อนไหวสูงและการควบคุมเป็นพิเศษ"
     },
     "มาตรา ๓๐": {
@@ -160,13 +172,13 @@ def check_topic_guard(text: str):
     lowercase_text = text.lower()
     # ตรวจสอบการทำ Jailbreak
     if "ignore all previous" in lowercase_text or "ignore instructions" in lowercase_text or "system prompt" in lowercase_text:
-        return "BLOCKED_JAILBREAK", "⚠️ ตรวจพบความพยายามหลีกเลี่ยงกฎความปลอดภัย (Jailbreak Attempt)"
+        return "BLOCKED_JAILBREAK", "ตรวจพบความพยายามหลีกเลี่ยงกฎความปลอดภัย (Jailbreak Attempt)"
         
     # ตรวจสอบคำถามไม่เกี่ยวข้อง
     non_pdpa_keywords = ["ผัดไทย", "สอนทำอาหาร", "เล่นมุก", "เล่าเรื่องตลก", "สปอยล์หนัง", "พยากรณ์อากาศ"]
     for kw in non_pdpa_keywords:
         if kw in lowercase_text:
-            return "BLOCKED_TOPIC", f"⚠️ คำถามภายนอกขอบเขต: คำขอเกี่ยวกับ '{kw}' ถูกจำกัดให้อยู่ภายใต้กรอบกฎหมาย PDPA เท่านั้น"
+            return "BLOCKED_TOPIC", f"คำถามภายนอกขอบเขต: คำขอเกี่ยวกับ '{kw}' ถูกจำกัดให้อยู่ภายใต้กรอบกฎหมาย PDPA เท่านั้น"
             
     return "ALLOWED", None
 
@@ -237,10 +249,14 @@ def generate_ai_response(redacted_prompt: str, sections: list):
 # 4. Streamlit UI Layout
 # ==============================================================================
 
-# Title Header HTML
+# Custom Clean SVG Avatars (NVIDIA Theme - No Emojis)
+USER_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231F2937'/><text x='50' y='65' font-family='sans-serif' font-size='50' fill='white' text-anchor='middle'>U</text></svg>"
+ASSISTANT_AVATAR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100' height='100' fill='%2376B900'/><text x='50' y='65' font-family='sans-serif' font-size='50' fill='black' font-weight='bold' text-anchor='middle'>N</text></svg>"
+
+# Title Header HTML (NVIDIA Theme - No Emojis)
 st.markdown("""
 <div class="header-container">
-    <div class="header-title">⚖️ PDPA Legal AI Assistant</div>
+    <div class="header-title">PDPA Legal AI Assistant</div>
     <div class="header-subtitle">ผู้ช่วยอัจฉริยะวิเคราะห์ข้อกฎหมาย PDPA ระดับองค์กร (Enterprise Hybrid-Safety Pipeline)</div>
 </div>
 """, unsafe_allow_html=True)
@@ -250,12 +266,12 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # ==============================================================================
-# Sidebar Configuration
+# Sidebar Configuration (NVIDIA Theme - No Emojis)
 # ==============================================================================
-st.sidebar.markdown("<h2 style='color:#38BDF8;'>🖥️ System Console</h2>", unsafe_allow_html=True)
+st.sidebar.markdown("<h2 style='color:#76B900; margin-bottom: 1rem;'>System Console</h2>", unsafe_allow_html=True)
 
 # Hardware Simulators
-st.sidebar.markdown('<div class="metric-card"><div class="metric-title">GPU VRAM Usage</div><div class="metric-value">4.8 / 6.0 GB 🟢</div></div>', unsafe_allow_html=True)
+st.sidebar.markdown('<div class="metric-card"><div class="metric-title">GPU VRAM Usage</div><div class="metric-value">4.8 / 6.0 GB (Optimal)</div></div>', unsafe_allow_html=True)
 st.sidebar.markdown('<div class="metric-card"><div class="metric-title">Active LLM</div><div class="metric-value">Qwen2.5-3B (4-bit)</div></div>', unsafe_allow_html=True)
 st.sidebar.markdown('<div class="metric-card"><div class="metric-title">RAG Embeddings</div><div class="metric-value">BGE-M3 (CPU-only)</div></div>', unsafe_allow_html=True)
 st.sidebar.markdown('<div class="metric-card"><div class="metric-title">Guardrails</div><div class="metric-value">Presidio + NeMo</div></div>', unsafe_allow_html=True)
@@ -263,7 +279,7 @@ st.sidebar.markdown('<div class="metric-card"><div class="metric-title">Guardrai
 st.sidebar.markdown("---")
 
 # Quick Prompts / Examples
-st.sidebar.markdown("<h4 style='color:#94A3B8;'>💡 คำถามแนะนำสำหรับทดลอง</h4>", unsafe_allow_html=True)
+st.sidebar.markdown("<h4 style='color:#B3B3B3; margin-bottom: 0.5rem;'>คำแนะนำสำหรับทดสอบ</h4>", unsafe_allow_html=True)
 examples = [
     "บริษัทจำเป็นต้องขอความยินยอมจากลูกค้าทุกครั้งไหม?",
     "ข้อมูลสุขภาพของพนักงานเป็นข้อมูลประเภทใดและใช้อะไรควบคุมบ้าง?",
@@ -274,12 +290,11 @@ examples = [
 
 for idx, ex in enumerate(examples):
     if st.sidebar.button(ex, key=f"ex_{idx}", use_container_width=True):
-        # We can programmatic trigger the chat input by assigning to state
         st.session_state.temp_input = ex
 
 # Reset Button
 st.sidebar.markdown("<br><br>", unsafe_allow_html=True)
-if st.sidebar.button("🗑️ ล้างประวัติการสนทนา (Clear Chat)", use_container_width=True, type="secondary"):
+if st.sidebar.button("ล้างประวัติการสนทนา (Clear Chat)", use_container_width=True, type="secondary"):
     st.session_state.messages = []
     st.rerun()
 
@@ -287,8 +302,8 @@ if st.sidebar.button("🗑️ ล้างประวัติการสน�
 # Chat Display
 # ==============================================================================
 for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        # If there are redactions, we can display it nicely
+    msg_avatar = USER_AVATAR if msg["role"] == "user" else ASSISTANT_AVATAR
+    with st.chat_message(msg["role"], avatar=msg_avatar):
         if "redacted_display" in msg:
             st.markdown(msg["redacted_display"], unsafe_allow_html=True)
         else:
@@ -296,7 +311,7 @@ for msg in st.session_state.messages:
             
         # Render references if available
         if "references" in msg and msg["references"]:
-            with st.expander("📚 เอกสารอ้างอิงทางกฎหมาย (Citations)"):
+            with st.expander("เอกสารอ้างอิงทางกฎหมาย (Citations)"):
                 for sec in msg["references"]:
                     st.markdown(f"**{sec}**: {PDPA_DB[sec]['text']}")
 
@@ -315,27 +330,27 @@ if user_input:
     trace = pdpa_logger.start_trace(user_input)
 
     # 1. Render User Message
-    with st.chat_message("user"):
+    with st.chat_message("user", avatar=USER_AVATAR):
         st.markdown(user_input)
     st.session_state.messages.append({"role": "user", "content": user_input})
     
-    # 2. Start Pipeline Simulation (using st.status)
-    with st.status("🛡️ กำลังประมวลผลผ่าน Guardrails & RAG Pipeline...", expanded=True) as status:
+    # 2. Start Pipeline Simulation (using st.status - No Emojis)
+    with st.status("กำลังประมวลผลผ่าน Guardrails & RAG Pipeline...", expanded=True) as status:
         
         # --- Stage 1: PII Scan ---
-        status.write("🔍 [Presidio Engine] สแกนข้อมูลส่วนบุคคล (PII Detection)...")
+        status.write("[Presidio Engine] สแกนข้อมูลส่วนบุคคล (PII Detection)...")
         time.sleep(0.8)
         has_pii, redacted_prompt, pii_list = detect_pii(user_input)
         
         pii_warning_html = ""
         if has_pii:
-            status.write(f"🔴 ตรวจพบข้อมูลส่วนบุคคล: {pii_list} -> ทำการแปลงข้อความเพื่อความปลอดภัย")
-            pii_warning_html = f"<div class='redact-badge'>⚠️ ตรวจพบและลบข้อมูล PII ออก: {pii_list}</div><br><i>ส่งเข้าโมเดลด้วยข้อความ: {redacted_prompt}</i>"
+            status.write(f"ตรวจพบข้อมูลส่วนบุคคล: {pii_list} -> ทำการแปลงข้อความเพื่อความปลอดภัย")
+            pii_warning_html = f"<div class='redact-badge'>ตรวจพบและลบข้อมูล PII ออก: {pii_list}</div><br><i>ส่งเข้าโมเดลด้วยข้อความ: {redacted_prompt}</i>"
         else:
-            status.write("🟢 ไม่พบข้อมูลส่วนบุคคลที่เป็นอันตรายในประโยค")
+            status.write("ไม่พบข้อมูลส่วนบุคคลที่เป็นอันตรายในประโยค")
             
         # --- Stage 2: Topic Guard ---
-        status.write("🛡️ [Topic Guard / NeMo] ตรวจสอบความปลอดภัยและขอบเขตหัวข้อสนทนา...")
+        status.write("[Topic Guard / NeMo] ตรวจสอบความปลอดภัยและขอบเขตหัวข้อสนทนา...")
         time.sleep(0.8)
         topic_status, topic_msg = check_topic_guard(redacted_prompt)
         
@@ -348,8 +363,8 @@ if user_input:
         )
 
         if topic_status != "ALLOWED":
-            status.update(label="❌ คำขอถูกระงับโดยระบบความปลอดภัย!", state="error", expanded=False)
-            with st.chat_message("assistant"):
+            status.update(label="คำขอถูกระงับโดยระบบความปลอดภัย!", state="error", expanded=False)
+            with st.chat_message("assistant", avatar=ASSISTANT_AVATAR):
                 st.markdown(topic_msg)
             st.session_state.messages.append({"role": "assistant", "content": topic_msg})
             # === Logging: บันทึก Blocked Request ===
@@ -358,13 +373,13 @@ if user_input:
             pdpa_logger.finalize(trace, _start_time)
             st.stop()
             
-        status.write("🟢 หัวข้อผ่านเกณฑ์ความปลอดภัย เข้าสู่การทำงานหลัก")
+        status.write("หัวข้อผ่านเกณฑ์ความปลอดภัย เข้าสู่การทำงานหลัก")
 
         # --- Stage 3: Retrieval (RAG) ---
-        status.write("📚 [BGE-M3 Embeddings + NitiLink] ค้นหาเอกสารมาตรากฎหมายอ้างอิง...")
+        status.write("[BGE-M3 Embeddings + NitiLink] ค้นหาเอกสารมาตรากฎหมายอ้างอิง...")
         time.sleep(1.0)
         retrieved_sections = retrieve_rag_context(redacted_prompt)
-        status.write(f"📂 พบบทบัญญัติเกี่ยวข้อง: {retrieved_sections}")
+        status.write(f"พบบทบัญญัติเกี่ยวข้อง: {retrieved_sections}")
 
         # === Logging: บันทึกผล RAG ===
         pdpa_logger.log_rag_context(trace, [
@@ -373,7 +388,7 @@ if user_input:
         ])
         
         # --- Stage 4: LLM Generation ---
-        status.write("🤖 [Qwen2.5-3B-Instruct (4-bit)] กำลังสรุปข้อมูลและเรียบเรียงคำตอบ...")
+        status.write("[Qwen2.5-3B-Instruct (4-bit)] กำลังสรุปข้อมูลและเรียบเรียงคำตอบ...")
         time.sleep(1.2)
         ai_response = generate_ai_response(redacted_prompt, retrieved_sections)
 
@@ -387,16 +402,16 @@ if user_input:
         # === Logging: จับ Hardware Metrics ===
         pdpa_logger.log_hardware(trace)
         
-        status.update(label="✅ ประมวลผลคำตอบสำเร็จ!", state="complete", expanded=False)
+        status.update(label="ประมวลผลคำตอบสำเร็จ!", state="complete", expanded=False)
 
     # 3. Render Assistant Response
-    with st.chat_message("assistant"):
+    with st.chat_message("assistant", avatar=ASSISTANT_AVATAR):
         if pii_warning_html:
             st.markdown(pii_warning_html, unsafe_allow_html=True)
         st.markdown(ai_response)
         
-        # Citation Expander
-        with st.expander("📚 เอกสารอ้างอิงทางกฎหมาย (Citations)"):
+        # Citation Expander (No Emojis)
+        with st.expander("เอกสารอ้างอิงทางกฎหมาย (Citations)"):
             for sec in retrieved_sections:
                 st.markdown(f"**{sec}** ({PDPA_DB[sec]['description']}):")
                 st.markdown(f"> *{PDPA_DB[sec]['text']}*")
@@ -415,4 +430,3 @@ if user_input:
 
     # === Logging: Finalize — เขียน Trace ลงไฟล์ JSONL ===
     pdpa_logger.finalize(trace, _start_time)
-
